@@ -1,4 +1,4 @@
-# NM-Statistics 아키텍처
+# stats-ai4radmed 아키텍처
 
 이 문서는 AI 에이전트의 **통합 진입점(System Map)**입니다.
 모든 작업은 이 문서 → `.spec/` 명세 → `src/` 구현 순서로 수행합니다.
@@ -10,7 +10,7 @@
 | 영역       | 기술                                                       |
 | ---------- | ---------------------------------------------------------- |
 | 프레임워크 | Astro 5.x (SSR 전용, `prerender = false` 강제)             |
-| 인프라     | Vercel 서울 (Hosting), Supabase 도쿄 (Auth/DB/RLS/Storage) |
+| 인프라     | Vercel 서울 (Hosting), Supabase 서울 (Auth/DB/RLS/Storage) |
 | DNS/CDN    | Cloudflare (DNS only, Full Strict SSL)                     |
 | 상태 관리  | Nanostores (Client-side)                                   |
 | 품질       | ESLint, Prettier, Husky, Vitest (Unit), Playwright (E2E)   |

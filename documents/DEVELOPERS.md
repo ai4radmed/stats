@@ -1,4 +1,4 @@
-# NM-Statistics
+# nmstats
 
 이 프로젝트는 **핵의학 진료통계 조회**를 위한 시스템을 **Astro(SSR)와 Supabase** 기반으로 구축한 PWA(Progressive Web App) 입니다. 오프라인 상태에서도 작동하며 빠른 속도를 제공하도록 설계되었습니다.
 

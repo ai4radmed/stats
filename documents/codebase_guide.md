@@ -1,6 +1,6 @@
 # 프로젝트 개발자 가이드 (Codebase Guide)
 
-이 문서는 NM-Statistics의 기술적 설계 구조와 각 모듈의 역할을 정의합니다.
+이 문서는 nmstats의 기술적 설계 구조와 각 모듈의 역할을 정의합니다.
 
 ---
 
@@ -38,7 +38,7 @@ Astro의 파일 시스템 기반 라우팅이 적용되며, 모든 페이지는 
 ## 2. 주요 설계 원칙
 
 ### 2-1. SSR Only
-`nm-statistics`는 동적인 데이터 처리를 위해 모든 페이지에서 `prerender = false`를 강제합니다.
+`nmstats`는 동적인 데이터 처리를 위해 모든 페이지에서 `prerender = false`를 강제합니다.
 
 ### 2-2. Spec-First Development
 모든 코드는 `.spec/` 디렉터리의 명세 문서를 먼저 작성한 후 구현합니다. 이는 AI 에이전트와의 협업 효율을 극대화하기 위함입니다.

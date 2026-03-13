@@ -11,7 +11,7 @@ import remarkGfm from 'remark-gfm';
 
 // https://astro.build/config
 export default defineConfig({
-    site: 'https://nm-statistics.vercel.app', // Placeholder
+    site: 'https://nmstats.vercel.app', // Placeholder
     base: '/',
     output: 'server',
     markdown: {

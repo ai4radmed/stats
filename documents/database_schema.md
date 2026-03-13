@@ -1,6 +1,6 @@
-# NM-Statistics 데이터베이스 스키마
+# nmstats 데이터베이스 스키마
 
-이 문서는 NM-Statistics 프로젝트의 Supabase PostgreSQL 데이터베이스 구조를 설명합니다.
+이 문서는 nmstats 프로젝트의 Supabase PostgreSQL 데이터베이스 구조를 설명합니다.
 
 > **Note:** 모든 테이블 스키마 정의와 마이그레이션은 `sql_query/rebuild_all_tables.sql` 파일 하나로 통합 관리됩니다. (멱등성 보장)
 
