@@ -49,12 +49,29 @@ CREATE TRIGGER tr_mfds_radpharm_update
     FOR EACH ROW
     EXECUTE FUNCTION update_modified_column();
 
+-- 3. API 동기화 로그 테이블 (api_sync_log)
+-- 데이터 수집 파이프라인의 상태 및 통계를 기록
+CREATE TABLE IF NOT EXISTS public.api_sync_log (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    sync_source TEXT NOT NULL,                        -- 수집 출처 (예: MFDS)
+    request_count INTEGER DEFAULT 0,                  -- API 호출 횟수
+    item_count INTEGER DEFAULT 0,                     -- 수집된 데이터 수
+    status TEXT,                                      -- 상태 (SUCCESS, FAIL)
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- RLS 정책 설정 (기본적으로 모두 거부 후 필요한 권한만 부여)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.mfds_radpharm_master ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.api_sync_log ENABLE ROW LEVEL SECURITY;
 
 -- 공통: 누구나 읽기 가능 (Select)
+DROP POLICY IF EXISTS "Allow public read access" ON public.mfds_radpharm_master;
 CREATE POLICY "Allow public read access" ON public.mfds_radpharm_master
+    FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow public read sync logs" ON public.api_sync_log;
+CREATE POLICY "Allow public read sync logs" ON public.api_sync_log
     FOR SELECT USING (true);
 
 -- 관리자만 삽입/수정/삭제 가능 (나중에 프로필 기반 admin 정책 필요)

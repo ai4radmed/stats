@@ -32,6 +32,7 @@ def fetch_mfds_data(atc_code: str):
     all_items = []
     page_no = 1
     num_of_rows = 100
+    request_success_count = 0
     
     # .env의 키가 디코딩된 상태이므로 URL 전송을 위해 인코딩
     encoded_key = quote(MFDS_KEY)
@@ -57,6 +58,7 @@ def fetch_mfds_data(atc_code: str):
                 break
 
             response.raise_for_status()
+            request_success_count += 1
             data = response.json()
             
             body = data.get("body", {})
@@ -78,7 +80,7 @@ def fetch_mfds_data(atc_code: str):
             logger.error(f"API 호출 중 오류 발생: {e}")
             break
             
-    return all_items
+    return all_items, request_success_count
 
 def classify_category(item_name: str):
     """제품명 기반 카테고리 분류"""
@@ -108,7 +110,7 @@ def sync_to_supabase(items):
                 "main_item_ingr": item.get("MAIN_ITEM_INGR"),
                 "item_permit_date": item.get("ITEM_PERMIT_DATE") or None,
                 "cancel_date": item.get("CANCEL_DATE") or None,
-                "item_class_no": item.get("CLASS_NO"),
+                "item_class_no": item.get("PRDT_CLSF_NO"),
             }
             
             supabase.table("mfds_radpharm_master").upsert(data).execute()
@@ -120,11 +122,28 @@ def sync_to_supabase(items):
 def main():
     atc_codes = ["V09", "V10"]
     
+    total_requests = 0
+    total_items = 0
+    
     for code in atc_codes:
         logger.info(f"--- ATC {code} 수집 시작 ---")
-        items = fetch_mfds_data(code)
+        items, req_count = fetch_mfds_data(code)
         logger.info(f"수집된 항목 수: {len(items)}")
         sync_to_supabase(items)
+        total_requests += req_count
+        total_items += len(items)
+    
+    # 동기화 로그 기록
+    try:
+        supabase.table("api_sync_log").insert({
+            "sync_source": "MFDS",
+            "request_count": total_requests,
+            "item_count": total_items,
+            "status": "SUCCESS"
+        }).execute()
+        logger.info(f"동기화 로그 저장 완료: {total_requests} calls, {total_items} items")
+    except Exception as e:
+        logger.error(f"동기화 로그 저장 실패: {e}")
 
 if __name__ == "__main__":
     main()
