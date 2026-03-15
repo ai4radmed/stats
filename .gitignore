@@ -1,23 +1,26 @@
-# build output
-dist/
-# generated types
-.astro/
+# [Frontend - Astro/Node]
+web/node_modules/
+web/dist/
+web/.astro/
+web/test-results/
+web/npm-debug.log*
+web/.vercel
 
-# dependencies
-node_modules/
+# [Backend - Python/uv]
+scripts/.venv/
+scripts/__pycache__/
+scripts/*.pyc
+scripts/.pytest_cache/
+scripts/.ruff_cache/
 
-# logs
-npm-debug.log*
+# [Analytics - R/renv]
+analysis/renv/library/
+analysis/renv/local/
+analysis/renv/staging/
+analysis/.Rhistory
+analysis/.RData
 
-# environment variables
+# [General]
 .env
-.env.production
-
-# test output
-test-results/
-
-# macOS-specific files
+.env*.local
 .DS_Store
-
-# Vercel
-.vercel

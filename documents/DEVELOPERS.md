@@ -1,148 +1,76 @@
-# nmstats
+# nmstats (ai4radmed-stats) 개발자 가이드
 
-이 프로젝트는 **핵의학 진료통계 조회**를 위한 시스템을 **Astro(SSR)와 Supabase** 기반으로 구축한 PWA(Progressive Web App) 입니다. 오프라인 상태에서도 작동하며 빠른 속도를 제공하도록 설계되었습니다.
+이 프로젝트는 **핵의학 진료통계 조회**를 위한 시스템을 **Astro(UI), Python(Orchestration), R(Analytics)** 기반으로 구축한 다층 아키텍처(Triple-Stack) 시스템입니다.
 
 ---
 
-## AI Software Development Life Cycle (AI-SDLC)
+## 1. 아키텍처 개요 (Triple-Stack)
 
-본 프로젝트는 기획 단계부터 배포까지 AI 에이전트와의 적극적인 협업을 통해 높은 품질과 생산성을 보장하는 **AI-Native Spec-Driven Development** 워크플로우를 채택하고 있습니다. 명세(`.spec/`)를 중심으로 구현과 검증이 순환하는 자동화된 파이프라인 개발 경험을 제공합니다.
+본 프로젝트는 각 언어의 강점을 극대화하기 위해 세 개의 독립적인 레이어로 구성됩니다.
 
-### 개발 워크플로우 및 검증 루프
+### A. Frontend (web/)
+- **기술**: Astro 5.x (SSR), PWA
+- **역할**: 사용자 인터페이스 제공, 분석 데이터 시각화
+- **환경 관리**: `npm`, `.node-version`
 
-```mermaid
-graph TD
-    classDef ai fill:#f3e5f5,stroke:#ce93d8,stroke-width:2px,color:#4a148c;
-    classDef cursor fill:#e8f5e9,stroke:#81c784,stroke-width:2px,color:#1b5e20;
-    classDef ci fill:#e3f2fd,stroke:#90caf9,stroke-width:2px,color:#0d47a1;
-    classDef state fill:#fff3e0,stroke:#ffb74d,stroke-width:2px,color:#e65100;
+### B. Backend / Orchestration (scripts/)
+- **기술**: Python 3.12+ (uv)
+- **역할**: 데이터 수집 파이프라인 제어, R 스크립트 실행 자동화, DB 연동
+- **환경 관리**: `uv`, `pyproject.toml`
 
-    A([시작: 사용자 기획 프롬프트 주입]):::state --> B[Level 1: 아키텍처 설계 & 시스템 지도 생성]:::ai
-    B --> C[Level 2: .spec/ 파일 기반 상세 명세 작성]:::ai
+### C. Analytical Engine (analysis/)
+- **기술**: R (renv)
+- **역할**: 의료 통계 분석, ggplot2 기반 고품질 시각화 데이터 생성
+- **환경 관리**: `renv`, `renv.lock`
 
-    C --> D{Cursor IDE: 명세 파일 기반 수정 및 완성}:::cursor
-    D --> E[Level 3: Astro/TypeScript 구현체 생성]:::cursor
-    E --> F[테스트 명세 및 Vitest 코드 생성]:::cursor
-    F --> G{로컬 Pre-commit 검증 통과?}:::cursor
+---
 
-    G -- No --> D
-    G -- Yes --> H[GitHub Actions CI 자동 검증 파이프라인]:::ci
+## 2. 개발 워크플로우 (Spec-First)
 
-    H --> I[Lint 및 전체 테스트 실행]:::ci
-    I --> J{CI 검증 통과?}:::ci
+모든 개발은 `.spec/` 디렉터리의 명세를 중심으로 진행됩니다.
 
-    J -- No --> D
-    J -- Yes --> K[AI Spec-Driven Reviewer 교차검증]:::ai
+1.  **Plan**: 작업 지봉 수령 후 타겟 레이어(Web/Scripts/Analysis) 결정.
+2.  **Manifest**: `.spec/` 하위 해당 경로에 명세(API, 규칙) 작성.
+3.  **Execute**: 명세 기반 구현체 작성.
+4.  **Verify**: `Makefile`을 통한 통합 검증.
 
-    K --> L{명세-구현 완전 일치 확인?}:::ai
-    L -- No --> D
-    L -- Yes --> M([최종 배포 및 운영]):::state
+---
+
+## 3. 핵심 디렉터리 구조
+
+| 경로 | 설명 |
+| :--- | :--- |
+| `web/` | **Frontend**: Astro 웹 서비스 (node_modules, .astro 격리) |
+| `scripts/` | **Backend**: Python 오케스트레이터 (.venv 격리) |
+| `analysis/` | **Analytics**: R 통계 분석 엔진 (renv/library 격리) |
+| `.spec/` | 각 레이어별 1:1 대응 명세서 |
+| `sql_query/` | Supabase DB 스키마 및 RLS 정책 관리 |
+| `web/public/data/` | R이 분석한 결과(JSON/SVG)가 저장되는 공유 데이터 공간 |
+
+---
+
+### 최신 환경 동기화 (Sync)
+```bash
+make sync
 ```
 
-1.  **AI 기획 및 설계 (AI Planning)**: [AGENTS.md](../AGENTS.md)를 통해 시스템 지도를 먼저 정의하고, 모든 구현체 전에 `.spec/` 디렉토리에 명세를 먼저 작성합니다.
-2.  **명세 주도 개발 (Spec-Driven with Cursor)**: 작성된 명세 파일을 Cursor IDE에 전달하여 사용자와 AI가 명세의 디테일을 완성합니다. 완성된 명세를 바탕으로 1:1로 매칭되는 실행 파일을 생성한 뒤, Vitest를 위한 테스트 명세 및 실제 테스트 코드를 작성합니다. 테스트를 통과해야만 명세에 대한 구현 파일이 올바르게 만들어진 것으로 간주합니다.
-3.  **CI 검증 & AI 교차 리뷰 (CI & AI Review)**: 모든 실행 파일 개발이 완료되어 GitHub에 코드가 푸시되면, CI 파이프라인에서 Lint 및 전체 테스트가 진행됩니다. 모든 CI 테스트를 통과하면 마지막으로 **AI Spec-Driven Reviewer** 동작을 통해 명세와 실행 파일이 애초의 계획과 의도대로 정확히 작성되었는지 교차 검증을 수행합니다.
-
----
-
-## 핵심 기능 및 설계 철학
-
-### 📊 핵의학 진료통계 조회
-
-핵의학과의 진료통계 데이터를 실시간으로 조회하고 분석할 수 있는 환경을 제공합니다.
-
-- **반응형 UI**: 스마트폰, 태블릿, PC 등 다양한 디바이스에서 최적화된 통계 화면을 제공합니다.
-- **PWA 지원**: 주요 페이지 캐시를 통한 읽기 전용 오프라인 접근이 가능합니다.
-- **인증 기반 접근**: Supabase Auth를 통해 인가된 사용자만 통계 데이터에 접근할 수 있습니다.
-
-### ⚡ 최고의 성능을 위한 인프라 아키텍처
-
-사용자가 어디에 있든 1초 이내에 페이지를 경험할 수 있도록 엣지(Edge) 기반의 고성능 아키텍처를 구성했습니다.
-
-```mermaid
-graph LR
-    subgraph "User Environment"
-        User([사용자 기기]) --- SW[Service Worker Cache]
-    end
-
-    subgraph "Global Edge Routing"
-        User --> CF{Cloudflare DNS/CDN}
-        CF -- Full Strict SSL --> V[Vercel Seoul Region]
-    end
-
-    subgraph "Application Logic (SSR)"
-        V --> Astro[Astro 5.x SSR]
-        Astro --> Actions[Astro Server Actions]
-    end
-
-    subgraph "Data & Auth (Serverless)"
-        Actions --> S[Supabase Tokyo Region]
-        S --> DB[(PostgreSQL / RLS)]
-        S --> Auth[JWT Auth]
-    end
-
-    style CF fill:#f6821f,stroke:#fff,stroke-width:2px,color:#fff
-    style V fill:#000,stroke:#fff,stroke-width:2px,color:#fff
-    style S fill:#3ecf8e,stroke:#fff,stroke-width:2px,color:#fff
+### 데이터 분석 실행 (Update Stats)
+```bash
+make run-stats
 ```
 
-- **지연 시간 최적화**: Vercel 서울 리전과 Supabase 도쿄 리전을 결합하여 성능 저하 없는 SSR 환경을 구축했습니다.
-- **보안 아키텍처**: Cloudflare Full (Strict) SSL과 Supabase RLS(Row Level Security)를 통해 의료 데이터급 보안을 유지합니다.
+### 웹 개발 서버 실행
+```bash
+make dev
+```
 
 ---
 
-## 포함된 기능
+## 5. 설계 철학
 
-### 코드 품질 및 테스트
-
-- **린터·포매터**: ESLint, Prettier — `npm run lint`, `npm run format`
-- **타입 검사**: TypeScript — `npm run check`
-- **커밋 전 검사**: Husky + lint-staged — 타입 체크 및 단위 테스트 자동 실행
-- **테스트**: Vitest (Unit), Playwright (E2E) — `npm run test:unit`, `npm run test:e2e`
-- **CI/CD**: GitHub Actions — 자동 빌드, 테스트, AI Spec Review 및 Vercel 자동 배포
-
-### 주요 기술 스택
-
-- **프레임워크**: Astro 5.x (SSR 전용, PWA)
-- **백엔드 서비스**: Supabase (Auth, DB, Storage)
-- **상태 관리**: Nanostores (Persistent 스토어 지원)
+- **격리(Isolation)**: 각 레이어는 자신만의 환경 관리 도구(uv, renv, node)를 가지며 서로의 의존성을 침범하지 않습니다.
+- **데이터 흐름**: `DB -> Python/R -> JSON -> Astro` 순으로 한 방향으로만 흐릅니다.
+- **Fail Loudly**: 특히 R 통계 분석 레이어의 에러는 Python 로그를 통해 즉각적으로 인지되도록 설계되었습니다.
 
 ---
-
-## 프로젝트 구조
-
-| 경로              | 설명                                           |
-| ----------------- | ---------------------------------------------- |
-| `src/pages/`      | 라우팅 및 페이지 컴포넌트 (SSR 강제)           |
-| `src/actions/`    | 서버 사이드 비즈니스 로직 (Astro Actions)      |
-| `src/lib/`        | DB 클라이언트, 유틸리티                        |
-| `src/components/` | 재사용 가능한 UI 컴포넌트                      |
-| `.spec/`          | 파일별 1:1 매핑 명세서 (Level 2)               |
-| `sql_query/`      | DB 스키마 통합 관리 (`rebuild_all_tables.sql`) |
-| `tests/`          | 단위(Unit) 및 종단 간(E2E) 테스트 코드         |
-
----
-
-## 상세 가이드 및 유지보수 참조 (Maintenance Documents)
-
-프로젝트의 지속적인 운영과 기술적 세부 사항 파악을 위해 `documents/` 디렉토리에 다음 가이드들을 보관하고 있습니다. 특히 외부 서비스 설정 가이드는 운영 중 필수적으로 참조해야 할 자산입니다.
-
-### 인프라 및 설정
-
-- **[외부 서비스 설정 가이드](external_services_guide.md)**: **(운영 필수)** Supabase, Vercel, Cloudflare 등의 연동 및 환경 설정 체크리스트
-- **[데이터베이스 설계](database_schema.md)**: 전체 테이블 구조, RLS 정책 및 데이터 관계 정의
-
-### 개발 및 코드 품질
-
-- **[코드베이스 가이드](codebase_guide.md)**: 상세 파일별 기술적 역할 및 시스템 설계 가이드. 개별 명세(`.spec/`)는 AI 에이전트 전용으로 작성되어 가독성이 낮을 수 있으므로, 유지보수 목적의 코드 역할 파악은 이 가이드라인을 참조할 것을 권장합니다.
-- **[테스트 전략](test_strategy.md)**: QA를 위한 테스트 시나리오 및 수동 점검
-- **[로깅 가이드](logging_guide.md)**: 모듈별 로그 위치 및 보안 가이드
-
----
-
-## 라이선스 및 이용 안내
-
-본 프로젝트는 의료 통계 정보의 접근성 향상과 AI 기반 개발 표준의 확산을 위해 공개되었습니다.
-
-- **비상업적 목적**: 교육, 연구 및 개인적 용도의 활용은 자유롭게 허용됩니다.
-- **상업적 목적**: 본 프로젝트의 아키텍처, 명세 구조 또는 코드를 상업적 서비스에 인용하거나 재배포하려는 경우, 반드시 저작권자와의 사전 협의 및 서면 승인이 필요합니다.
+> 마지막 업데이트: 2026-03-15 (Triple-Stack Re-architecture)
