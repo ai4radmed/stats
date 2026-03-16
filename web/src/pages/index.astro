@@ -1,30 +1,51 @@
 ---
 export const prerender = false;
-
-// src/pages/index.astro
+import '../styles/design-system.css';
 ---
 
 <html lang="ko">
     <head>
         <meta charset="utf-8" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <meta name="viewport" content="width=device-width" />
-        <meta name="generator" content={Astro.generator} />
-        <title>핵의학 검사 통계 - NM Statistics</title>
-        <meta name="description" content="대한핵의학회 핵의학 검사 통계 서비스" />
+        <title>NM Statistics - 메인 대시보드</title>
+        <style>
+            body { font-family: 'Pretendard', sans-serif; background-color: var(--gray-50); margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+            .hero-container { max-width: 900px; width: 100%; padding: 2rem; text-align: center; }
+            h1 { font-size: 3rem; font-weight: 800; color: var(--primary); margin-bottom: 1rem; letter-spacing: -0.025em; }
+            p { color: var(--gray-500); font-size: 1.25rem; margin-bottom: 3rem; }
+            .grid-menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+            .menu-card { 
+                padding: 2rem; text-decoration: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                display: flex; flex-direction: column; align-items: flex-start; text-align: left;
+            }
+            .menu-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); border-color: var(--primary); }
+            .menu-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+            .menu-title { font-size: 1.25rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.5rem; }
+            .menu-desc { color: var(--gray-500); font-size: 0.875rem; line-height: 1.5; }
+        </style>
     </head>
-    <body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col justify-center items-center">
-        <main class="text-center p-8 max-w-2xl">
-            <h1 class="text-4xl font-bold mb-4 text-blue-700">핵의학 검사 통계</h1>
-            <p class="text-lg text-gray-600 mb-8">
-                AI-SDLC 기반으로 구축된 핵의학 통계 분석 대시보드입니다.
-            </p>
-            <div class="p-6 bg-white rounded-xl shadow-sm border border-gray-200">
-                <p class="text-gray-500 italic">서비스가 준비 중입니다. 명세에 따라 구현이 시작됩니다.</p>
+    <body>
+        <div class="hero-container">
+            <h1>NM Statistics</h1>
+            <p>핵의학 의약품 및 진료 통계를 위한 통합 분석 플랫폼</p>
+            
+            <div class="grid-menu">
+                <a href="/master-list" class="menu-card card">
+                    <span class="menu-icon">📦</span>
+                    <span class="menu-title">품목허가 마스터</span>
+                    <span class="menu-desc">식약처에 등록된 모든 방사성의약품의 품목 허가 현황 및 기본 정보 조회</span>
+                </a>
+                <a href="/performance" class="menu-card card">
+                    <span class="menu-icon">📈</span>
+                    <span class="menu-title">생산·수입 실적</span>
+                    <span class="menu-desc">연도별 시장 규모 및 품목별 실적 통계 분석. 필터 및 정렬 기능 제공</span>
+                </a>
+                <a href="#" class="menu-card card" style="opacity: 0.5; pointer-events: none;">
+                    <span class="menu-icon">🏢</span>
+                    <span class="menu-title">업체별 통계 (준비 중)</span>
+                    <span class="menu-desc">공급 업체별 점유율 및 허가 품목 변동 추이 요약</span>
+                </a>
             </div>
-        </main>
-        <footer class="mt-8 text-gray-400 text-sm">
-            &copy; 2026 NM Statistics. All rights reserved.
-        </footer>
+        </div>
     </body>
 </html>

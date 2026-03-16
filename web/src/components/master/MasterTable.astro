@@ -1,0 +1,92 @@
+---
+interface Props {
+  drugs: any[];
+}
+const { drugs } = Astro.props;
+---
+
+<div class="interactive-table-container">
+  <div class="table-controls">
+    <input type="text" id="masterSearch" placeholder="제품명 또는 업체명 검색..." class="filter-input" />
+    <select id="categoryFilter" class="filter-input">
+      <option value="">모든 카테고리</option>
+      <option value="Generator">Generator</option>
+      <option value="Cold Kit">Cold Kit</option>
+      <option value="Finished">Finished</option>
+    </select>
+  </div>
+
+  <div class="table-wrapper card">
+    <table id="masterTable">
+      <thead>
+        <tr>
+          <th data-sort="name" class="sortable">제품명 ↕</th>
+          <th data-sort="entp" class="sortable">업체명 ↕</th>
+          <th data-sort="cat" class="sortable">카테고리 ↕</th>
+          <th data-sort="date" class="sortable">허가일자 ↕</th>
+          <th>EDI 코드</th>
+        </tr>
+      </thead>
+      <tbody>
+        {drugs?.map((drug) => (
+          <tr class="master-row" 
+              data-name={drug.item_name} 
+              data-entp={drug.entp_name} 
+              data-cat={drug.category}
+              data-date={drug.item_permit_date}>
+            <td style="font-weight: 600;">{drug.item_name}</td>
+            <td style="color: var(--gray-500);">{drug.entp_name}</td>
+            <td>
+              <span class={`badge badge-${drug.category?.toLowerCase()?.replace(' ', '-')}`}>
+                {drug.category}
+              </span>
+            </td>
+            <td>{drug.item_permit_date}</td>
+            <td style="font-family: monospace; font-size: 0.8rem;">{drug.edi_code || '-'}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+  .table-controls { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+  .filter-input { padding: 0.6rem 1rem; border: 1px solid var(--gray-200); border-radius: 0.5rem; }
+  .sortable { cursor: pointer; }
+  .sortable:hover { background: var(--gray-100); }
+  .badge-generator { background: #fee2e2; color: #991b1b; }
+  .badge-cold-kit { background: #fef3c7; color: #92400e; }
+  .badge-finished { background: #dcfce7; color: #166534; }
+</style>
+
+<script>
+  const searchInput = document.getElementById('masterSearch');
+  const catFilter = document.getElementById('categoryFilter');
+  const rows = Array.from(document.querySelectorAll('.master-row'));
+
+  function filterMaster() {
+    const q = searchInput.value.toLowerCase();
+    const cat = catFilter.value;
+    rows.forEach(row => {
+      const matchQ = row.dataset.name.toLowerCase().includes(q) || row.dataset.entp.toLowerCase().includes(q);
+      const matchCat = !cat || row.dataset.cat === cat;
+      row.style.display = (matchQ && matchCat) ? '' : 'none';
+    });
+  }
+
+  [searchInput, catFilter].forEach(el => el?.addEventListener('input', filterMaster));
+
+  document.querySelectorAll('.sortable').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.sort;
+      const order = th.dataset.order === 'asc' ? 'desc' : 'asc';
+      th.dataset.order = order;
+      const tbody = document.querySelector('#masterTable tbody');
+      rows.sort((a, b) => {
+        let vA = a.dataset[col]; let vB = b.dataset[col];
+        return order === 'asc' ? vA.localeCompare(vB) : vB.localeCompare(vA);
+      }).forEach(row => tbody.appendChild(row));
+    });
+  });
+</script>

@@ -63,6 +63,7 @@
 
 - **데이터 파이프라인**: Python이 R 스크립트를 관리하고, 결과는 `web/public/data/`에 JSON으로 저장한다.
 - **환경 독립성**: 각 레이어는 전용 도구(uv, renv, node-version)로 완벽히 격리한다.
+- **환경 변수 동기화**: 프로젝트 루트의 `.env`를 원본으로 하며, `web/` 디렉터리에는 심볼릭 링크(`ln -s ../.env web/.env`)를 생성하여 통합 관리한다.
 - **200줄 원칙 (Complexity Control)**: 하나의 구현체 파일은 200줄 이하로 유지하며, 초과 시 모듈화한다.
 - **SDLC 사이클 (Atomic Cycle)**: `명세(Spec) -> 구현(Implementation) -> 테스트 명세(Test Spec) -> 테스트 구현(Test Code)`의 사이클을 하나라도 생략하지 않고 완수한다.
 - **Fail Loudly**: 특히 데이터 분석 단계의 에러는 Python 로그를 통해 명확히 남긴다.

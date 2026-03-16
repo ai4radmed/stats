@@ -14,6 +14,18 @@ sync:
 	cd web && npm install --legacy-peer-deps
 	@echo "[SUCCESS] Project sync and update complete."
 
+# 1-1. 실적 데이터 동기화 (Performance Data Only)
+sync-perf:
+	@echo ">> Syncing Product Performance Data (MFDS)..."
+	cd scripts && uv run sync_performance.py
+	@echo "[SUCCESS] Performance data synced to Supabase."
+
+# 1-2. 임상시험 데이터 동기화 (Clinical Trial Data Only)
+sync-clinical:
+	@echo ">> Syncing Clinical Trial Data (MFDS)..."
+	cd scripts && uv run sync_clinical_trials.py
+	@echo "[SUCCESS] Clinical trial data synced to Supabase."
+
 # 2. 분석 엔진 실행 (Data Pipeline)
 run-stats:
 	@echo ">> Running Statistical Pipeline (Python -> R)..."

@@ -1,0 +1,80 @@
+---
+export const prerender = false;
+
+import { supabaseAnon } from '../lib/supabase-server';
+import PerformanceTable from '../components/performance/PerformanceTable.astro';
+import '../styles/design-system.css';
+
+// 데이터 수집 (Join하여 제품명 포함)
+const { data: performance, error } = await supabaseAnon
+    .from('mfds_item_performance')
+    .select(`
+        *,
+        mfds_radpharm_master (
+            item_name,
+            entp_name
+        )
+    `)
+    .order('year', { ascending: false })
+    .order('amount', { ascending: false });
+
+if (error) {
+    console.error('Data fetch error:', error);
+}
+
+// 데이터 가공 (Flatten)
+const performanceData = performance?.map(item => ({
+    ...item,
+    item_name: item.mfds_radpharm_master?.item_name || item.item_name,
+    entp_name: item.mfds_radpharm_master?.entp_name || item.entp_name
+})) || [];
+
+const totalAmount = performanceData.reduce((sum, row) => sum + (row.amount || 0), 0);
+---
+
+<html lang="ko">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>연도별 생산수입 실적 - NM Statistics</title>
+        <style>
+            body { font-family: 'Pretendard', sans-serif; background-color: var(--gray-50); margin: 0; }
+            .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+            header { margin-bottom: 2.5rem; }
+            h1 { font-size: 2.25rem; color: var(--primary); margin: 0 0 0.5rem 0; }
+            .subtitle { color: var(--gray-500); font-size: 1.125rem; }
+            .stat-summary { display: flex; gap: 1.5rem; margin-bottom: 2rem; }
+            .stat-card { flex: 1; padding: 1.5rem; }
+            .stat-label { font-size: 0.875rem; color: var(--gray-500); margin-bottom: 0.5rem; display: block; }
+            .stat-value { font-size: 1.75rem; font-weight: 800; color: var(--gray-900); }
+            .back-link { color: var(--gray-500); text-decoration: none; font-size: 0.875rem; display: inline-block; margin-bottom: 1rem; transition: color 0.2s; }
+            .back-link:hover { color: var(--primary); text-decoration: underline; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <a href="/" class="back-link">&larr; 메인으로 돌아가기</a>
+            <header>
+                <h1>연도별 생산·수입 실적</h1>
+                <p class="subtitle">식약처 데이터를 기반으로 분석된 방사성의약품의 시장 규모와 품목별 실적 현황입니다.</p>
+            </header>
+
+            <div class="stat-summary">
+                <div class="stat-card card">
+                    <span class="stat-label">조회된 총 실적 합계</span>
+                    <span class="stat-value">{totalAmount.toLocaleString()} 원</span>
+                </div>
+                <div class="stat-card card">
+                    <span class="stat-label">데이터 품목 수</span>
+                    <span class="stat-value">{performanceData.length} 건</span>
+                </div>
+            </div>
+
+            <PerformanceTable performanceData={performanceData} />
+            
+            <footer style="margin-top: 4rem; text-align: center; color: var(--gray-300); font-size: 0.875rem; padding-bottom: 2rem;">
+                &copy; 2026 NM Statistics. All rights reserved.
+            </footer>
+        </div>
+    </body>
+</html>
